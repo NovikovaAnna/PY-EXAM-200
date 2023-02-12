@@ -48,25 +48,15 @@ class Cart:
         self.products.remove(product)
 
 
-class User(Password):
-    next_id = 1
+class User:
+    _id_counter =IdCounter()
+
+    def __init__(self):
+        self._id = self._id_counter.get_id()
 
     def __init__(self, username, password):
-        super().__init__(password)
-        self.id = User.next_id
-        User.next_id += 1
         self.__username = username
-        self.cart = Cart()
-
-    #def __init__(self, username, password):
-        #     self.id = User.next_id
-        #     User.next_id += 1
-        #     self.__username = username
-        #     self.__password = self.hash_password(password)
-        #     self.cart = Cart()
-
-    def hash_password(self, password):
-        return hashlib.sha256(password.encode()).hexdigest()
+        self.__password = Password(password)
 
     @property
     def username(self):
@@ -74,13 +64,14 @@ class User(Password):
 
     @property
     def password(self):
-        return 'password1'
+        return self.__password
 
     def __str__(self):
         return f"Username: {self.username}, Cart: {self.cart.products}"
 
     def __repr__(self):
         return f"User({self.username}, {self.password})"
+
 
 class Store:
     def __init__(self):
@@ -116,12 +107,34 @@ class Product:
     def __init__(self):
         self._id = self._id_counter.get_id()
 
-    def __init__(self, name, price, brand, category, product_id):
+    def __init__(self, name, price: (int,float), brand, category, product_id:int):
         self.name = name
-        self.price = price
+        self._price = price
         self.brand = brand
         self.category = category
-        self.product_id = product_id
+        self._product_id = product_id
+
+    @property
+    def price(self) -> (int,float):
+        return self._price
+    @price.setter
+    def price(self, value):
+        if not isinstance(value, (int, float)):
+            raise TypeError("Цена может быть только числом")
+        if not  value > 0 :
+            raise ValueError("Цена может быть только положительной")
+        self._price= value
+
+    @property
+    def product_id(self) -> int:
+        return self._product_id
+    @product_id.setter
+    def product_id(self, value):
+        if not isinstance(value, int):
+            raise TypeError("id продукта может быть только целым числом")
+        if not  value > 0 :
+            raise ValueError("id продукта может быть только положительным числом")
+        self._product_id = value
 
     def __str__(self):
         return f"{self.name} ({self.brand}), {self.price}$"
